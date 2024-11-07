@@ -1,0 +1,17 @@
+{
+    "browser": "Chrome",
+    "confluence_info" : {
+        "base_url": null,
+        "login_url" : null,
+        "query_url" : null,
+        "page_info_url" : null
+    },
+    "default_card_panel_name" : "Basic Info",
+    "link_ignore_types" : ["mailto", "tel", "data"],
+    "info_skip" : {
+        "default_card_panel_name" : ["Export As", "Operations", "Tiny Link"],
+        "Labels" : true,
+        "Recent Changes" : true,
+        "Outgoing Links" : false
+    }
+}

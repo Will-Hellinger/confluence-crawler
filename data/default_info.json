@@ -4,14 +4,17 @@
         "base_url": null,
         "login_url" : null,
         "query_url" : null,
-        "page_info_url" : null
+        "page_info_url" : null,
+        "spaces" : []
     },
+    "timeout" : 3,
     "default_card_panel_name" : "Basic Info",
-    "link_ignore_types" : ["mailto", "tel", "data"],
+    "link_ignore_types" : ["mailto", "tel", "data", "file"],
     "info_skip" : {
-        "default_card_panel_name" : ["Export As", "Operations", "Tiny Link"],
+        "default_card_panel_name" : ["Export As", "Operations", "Tiny Link: (useful for email)"],
         "Labels" : true,
         "Recent Changes" : true,
+        "Incoming Links" : true,
         "Outgoing Links" : false
     }
 }

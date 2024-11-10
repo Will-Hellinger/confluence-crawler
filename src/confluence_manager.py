@@ -1,7 +1,5 @@
-import os
 import bs4
 import time
-import json
 import requests
 import selenium
 
@@ -101,7 +99,7 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, d
                 if len(label_types) != len(label_lists) and verbose:
                     print('Mismatched label types and lists.')
                 
-                for i in range(len(label_types)):
+                for i in range(0, len(label_types)):
                     label_type: str = label_types[i].text.strip().split(' (')[0]
                     data[card_title][label_type] = []
 
@@ -200,7 +198,15 @@ def test_page_links(session: requests.Session, page: dict, base_url: str, link_i
         try:
             response = session.get(value, timeout=timeout)
             data[value] = response.status_code
-        except requests.exceptions.RequestException as e:
+        except Exception as error:
             data[value] = 'Error resolving'
+
+            if value.startswith('http://') and not value.startswith('https://'):
+                try:
+                    response = session.get(value.replace('http://', 'https://', 1), timeout=timeout)
+                    data[value] = response.status_code
+                except requests.exceptions.RequestException:
+                    data[value] = 'Error connecting'
+
     
     return data

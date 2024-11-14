@@ -23,6 +23,7 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
     
     logging_in: bool = False
     login_title_list: list[str] = ['log in', 'login']
+    duO_prompt: bool = False
 
     while True:
         current_page_name: str = webdriver.title
@@ -30,7 +31,16 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
         if any(title in current_page_name.lower() for title in login_title_list):
             logging_in = True
         
-        if logging_in and not any(title in current_page_name.lower() for title in login_title_list):
+        # Duo two-factor authentication
+        if 'duo' in current_page_name.lower():
+            if not duO_prompt:
+                print('Please complete the two-factor authentication.')
+                duO_prompt = True
+
+            time.sleep(1)
+            continue
+        
+        if logging_in and not any(title in current_page_name.lower() for title in login_title_list) and 'Atlassian' in current_page_name:
             break
 
         time.sleep(0.1)
@@ -166,11 +176,12 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, d
     return data
 
 
-def test_page_links(session: requests.Session, page: dict, base_url: str, link_ignore_types: list[str], timeout: int) -> dict:
+def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], timeout: int) -> dict:
     """
     Test the links on a page.
 
     :param session: The session to use.
+    :param headers: The headers to use.
     :param page: The page to test.
     :param base_url: The base URL of the Confluence site.
     :param link_ignore_types: The types of links to ignore.
@@ -196,14 +207,14 @@ def test_page_links(session: requests.Session, page: dict, base_url: str, link_i
             value = f'{base_url}{value}'
 
         try:
-            response = session.get(value, timeout=timeout)
+            response = session.get(value, timeout=timeout, headers=headers)
             data[value] = response.status_code
         except Exception as error:
-            data[value] = 'Error resolving'
+            data[value] = error
 
             if value.startswith('http://') and not value.startswith('https://'):
                 try:
-                    response = session.get(value.replace('http://', 'https://', 1), timeout=timeout)
+                    response = session.get(value.replace('http://', 'https://', 1), timeout=timeout, headers=headers)
                     data[value] = response.status_code
                 except requests.exceptions.RequestException:
                     data[value] = 'Error connecting'

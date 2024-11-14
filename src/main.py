@@ -1,6 +1,5 @@
 import os
 import time
-import shutil
 import requests
 import argparse
 import selenium
@@ -50,7 +49,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
             info['link_count'] += 1
 
             if status not in (200, 401):
-                info['failed_links'][link] = status
+                info['failed_links'][link] = page.get(default_card_panel_name, {}).get('Title', 'Unknown')
         
         thread_info[thread_number] = info
     

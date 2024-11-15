@@ -233,11 +233,15 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
     parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
     parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
+    parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
+    parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
 
     args: argparse.Namespace = parser.parse_args()
 
     default_data_path: str = f'.{os.sep}data{os.sep}default_info.json'
     data_path: str = f'.{os.sep}data{os.sep}info.json'
+    cache_path: str = f'.{os.sep}data{os.sep}cache{os.sep}'
+
     header_path: str = f'.{os.sep}data{os.sep}headers.json'
     export_path: str = f'.{os.sep}out{os.sep}'
 
@@ -273,6 +277,9 @@ if __name__ == '__main__':
     
     if not os.path.exists(export_path):
         os.makedirs(export_path)
+
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path)
 
     if not args.spaces and data.get('confluence_info').get('spaces') is None:
         print('Please specify the spaces to check.')

@@ -63,3 +63,7 @@ The crawler can be configured using a JSON file. Below is an example configurati
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.
+
+## License
+
+This project is licensed under the GNU GPL V3 License. See the [LICENSE](LICENSE) file for details.

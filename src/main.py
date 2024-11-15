@@ -13,7 +13,7 @@ import confluence_manager
 thread_info: dict = {}
 
 
-def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], timeout: int, export: bool, verbose: bool) -> None:
+def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], timeout: int, export: bool, export_path: str, verbose: bool) -> None:
     """
     Thread function to scrape the pages.
 
@@ -26,6 +26,8 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
     :param card_info_skip: The card info to skip.
     :param link_ignore_types: The types of links to ignore.
     :param timeout: The timeout to use.
+    :param export: Export the pages to word documents.
+    :param export_path: The path to export the word documents.
     :param verbose: Enable verbose mode.
     :return: None
     """
@@ -52,7 +54,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
                 page_data: requests.Response = session.get(page_download_link)
 
                 if page_data.status_code == 200:
-                    with open(f'.{os.sep}out{os.sep}{value}.doc', 'wb') as file:
+                    with open(f'{export_path}{value}.doc', 'wb') as file:
                         file.write(page_data.content)
 
         for link, status in page_links.items():
@@ -66,11 +68,10 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
     session = requests.Session() # Clear the session
 
 
-def info_thread(verbose: bool) -> None:
+def info_thread() -> None:
     """
     Thread function to print the info.
 
-    :param verbose: Enable verbose mode.
     :return: None
     """
 
@@ -80,8 +81,7 @@ def info_thread(verbose: bool) -> None:
         status_lines = []
 
         if thread_info == {}:
-            if verbose:
-                print('Waiting for threads to start...')
+            print('Waiting for threads to start...')
 
             time.sleep(0.5)
             continue
@@ -95,18 +95,16 @@ def info_thread(verbose: bool) -> None:
                 threads_alive = True
         
         if not threads_alive:
-            if verbose:
-                print('Threads finished.')
+            print('Threads finished.')
 
             break
         
-        if verbose:
-            print(' | '.join(status_lines), end='\r')
+        print(' | '.join(status_lines), end='\r')
 
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -114,6 +112,9 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     :param query_data: The query data to use.
     :param headers: The headers to use.
     :param page_count: The max number of pages to check.
+    :param thread_count: The number of threads to use.
+    :param export: Export the pages to word documents.
+    :param export_path: The path to export the word documents.
     :param verbose: Enable verbose mode.
     :return: None
     """
@@ -187,17 +188,19 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
         if verbose:
             print(f'Starting thread {i}...')
 
-        thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, verbose))
+        thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, export_path, verbose))
         threads.append(thread)
         thread.start()
     
-    info_thread_thread = threading.Thread(target=info_thread, args=(verbose,))
-    info_thread_thread.start()
+    if verbose:
+        info_thread_thread = threading.Thread(target=info_thread)
+        info_thread_thread.start()
     
     for thread in threads:
         thread.join()
     
-    info_thread_thread.join()
+    if verbose:
+        info_thread_thread.join()
 
     for thread_number, info in thread_info.items():
         link_count += info['link_count']
@@ -229,18 +232,26 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
     parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
+    parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
 
     args: argparse.Namespace = parser.parse_args()
 
     default_data_path: str = f'.{os.sep}data{os.sep}default_info.json'
     data_path: str = f'.{os.sep}data{os.sep}info.json'
     header_path: str = f'.{os.sep}data{os.sep}headers.json'
+    export_path: str = f'.{os.sep}out{os.sep}'
 
     if args.data:
         data_path = args.data
     
     if args.headers:
         header_path = args.headers
+    
+    if args.export_path:
+        export_path = args.export_path
+    
+    if not export_path.endswith(os.sep):
+        export_path += os.sep
 
     query_path: str = f'.{os.sep}data{os.sep}pages_query.json'
 
@@ -259,6 +270,9 @@ if __name__ == '__main__':
     else:
         headers = {}
         print('Failed to load the headers file.')
+    
+    if not os.path.exists(export_path):
+        os.makedirs(export_path)
 
     if not args.spaces and data.get('confluence_info').get('spaces') is None:
         print('Please specify the spaces to check.')
@@ -268,4 +282,4 @@ if __name__ == '__main__':
         spaces = args.spaces.split(',')
         data['confluence_info']['spaces'] = spaces
 
-    main(data, query, headers, args.count, args.threads, args.export, args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, export_path, args.verbose)

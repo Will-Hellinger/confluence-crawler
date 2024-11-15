@@ -10,7 +10,7 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
 
     :param confluence_login_link: The Confluence login link.
     :param driver: The driver to use.
-    :return: True if the user has logged in, False otherwise.
+    :return: The cookies if the user successfully logs in. False otherwise.
     """
 
     print("Please login to Confluence.")
@@ -74,8 +74,10 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     :param session: The session to use.
     :param page_id: The ID of the page.
     :param page_info_url: The URL to get the page information.
+    :param confluence_base_url: The base URL of the Confluence site.
     :param default_card_panel_name: The default name for a card panel.
     :param card_info_skip: The information to skip.
+    :param verbose: Whether to print verbose output.
     :return: The information for the page.
     """
 

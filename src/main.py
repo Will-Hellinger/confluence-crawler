@@ -13,7 +13,7 @@ import confluence_manager
 thread_info: dict = {}
 
 
-def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], timeout: int, verbose: bool) -> None:
+def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], timeout: int, export: bool, verbose: bool) -> None:
     """
     Thread function to scrape the pages.
 
@@ -38,18 +38,28 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
     info: dict = {"current_page": "", "page_count_given": len(pages.keys()), "page_count": 0, "link_count" : 0, "failed_links": {}}
 
     for key, value in pages.items():
-        page: dict = confluence_manager.get_page_info(session, key, confluence_page_info_url, default_card_panel_name, card_info_skip, verbose)
+        page: dict = confluence_manager.get_page_info(session, key, confluence_page_info_url, confluence_base_url, default_card_panel_name, card_info_skip, verbose)
 
         info['current_page'] = value
         info['page_count'] += 1
 
         page_links: dict = confluence_manager.test_page_links(session, headers, page, confluence_base_url, link_ignore_types, timeout)
 
+        if export:
+            page_download_link: str = page.get(default_card_panel_name, {}).get('Export As', {}).get('Word', None)
+
+            if page_download_link is not None:
+                page_data: requests.Response = session.get(page_download_link)
+
+                if page_data.status_code == 200:
+                    with open(f'.{os.sep}out{os.sep}{value}.doc', 'wb') as file:
+                        file.write(page_data.content)
+
         for link, status in page_links.items():
             info['link_count'] += 1
 
             if status not in (200, 401):
-                info['failed_links'][link] = page.get(default_card_panel_name, {}).get('Title', 'Unknown')
+                info['failed_links'][link] = value
         
         thread_info[thread_number] = info
     
@@ -96,7 +106,7 @@ def info_thread(verbose: bool) -> None:
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -177,7 +187,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
         if verbose:
             print(f'Starting thread {i}...')
 
-        thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, verbose))
+        thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, verbose))
         threads.append(thread)
         thread.start()
     
@@ -218,6 +228,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--threads', type=int, help='The number of threads to use.', default=1)
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
+    parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -257,4 +268,4 @@ if __name__ == '__main__':
         spaces = args.spaces.split(',')
         data['confluence_info']['spaces'] = spaces
 
-    main(data, query, headers, args.count, args.threads, args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, args.verbose)

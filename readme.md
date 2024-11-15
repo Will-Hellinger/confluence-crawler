@@ -51,7 +51,7 @@ The crawler can be configured using a JSON file. Below is an example configurati
     "default_card_panel_name" : "Basic Info",
     "link_ignore_types" : ["mailto", "tel", "data", "file"],
     "info_skip" : {
-        "default_card_panel_name" : ["Export As", "Operations", "Tiny Link: (useful for email)"],
+        "default_card_panel_name" : ["Operations", "Tiny Link: (useful for email)"],
         "Labels" : true,
         "Recent Changes" : true,
         "Incoming Links" : true,

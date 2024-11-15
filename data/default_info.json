@@ -2,9 +2,9 @@
     "browser": "Chrome",
     "confluence_info" : {
         "base_url": null,
-        "login_url" : null,
-        "query_url" : null,
-        "page_info_url" : null,
+        "login_url" : "/wiki/spaces",
+        "query_url" : "/cgraphql?q=SpacePagesQuery",
+        "page_info_url" : "/wiki/pages/viewinfo.action?pageId=",
         "spaces" : []
     },
     "timeout" : 3,

@@ -10,7 +10,7 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
 
     :param confluence_login_link: The Confluence login link.
     :param driver: The driver to use.
-    :return: True if the user has logged in, False otherwise.
+    :return: The cookies if the user successfully logs in. False otherwise.
     """
 
     print("Please login to Confluence.")
@@ -67,15 +67,17 @@ def get_pages(session: requests.Session, query_url: str, query: dict) -> list[di
     return pages
 
 
-def get_page_info(session: requests.Session, page_id: str, page_info_url: str, default_card_panel_name: str, card_info_skip: dict, verbose: bool) -> dict:
+def get_page_info(session: requests.Session, page_id: str, page_info_url: str, confluence_base_url: str, default_card_panel_name: str, card_info_skip: dict, verbose: bool) -> dict:
     """
     Get the information for a page.
 
     :param session: The session to use.
     :param page_id: The ID of the page.
     :param page_info_url: The URL to get the page information.
+    :param confluence_base_url: The base URL of the Confluence site.
     :param default_card_panel_name: The default name for a card panel.
     :param card_info_skip: The information to skip.
+    :param verbose: Whether to print verbose output.
     :return: The information for the page.
     """
 
@@ -170,6 +172,18 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, d
                         value = {'user' : values[0].text.strip(), 'date' : values[1].text.strip()}
                     else:
                         value = item.find('td').text.strip()
+                    
+                    if key == 'Export As':
+                        export_types: list = item.find_all('a')
+                        value: dict = {}
+
+                        for export_type in export_types:
+                            export_link: str = export_type.get('href')
+
+                            if export_link.startswith('/'):
+                                export_link = f'{confluence_base_url}{export_link}'
+
+                            value[export_type.text.strip()] = export_link
 
                     data[card_title][key] = value
     

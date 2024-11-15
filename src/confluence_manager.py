@@ -23,7 +23,7 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
     
     logging_in: bool = False
     login_title_list: list[str] = ['log in', 'login']
-    duO_prompt: bool = False
+    duo_prompt: bool = False
 
     while True:
         current_page_name: str = webdriver.title
@@ -33,9 +33,9 @@ def login_prompt(confluence_login_link: str, webdriver: selenium.webdriver) -> b
         
         # Duo two-factor authentication
         if 'duo' in current_page_name.lower():
-            if not duO_prompt:
+            if not duo_prompt:
                 print('Please complete the two-factor authentication.')
-                duO_prompt = True
+                dui_prompt = True
 
             time.sleep(1)
             continue

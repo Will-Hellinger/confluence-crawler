@@ -28,6 +28,18 @@ To run the crawler, use the following command:
 python ./src/main.py -c [page count] -t [thread count]
 ```
 
+## Arguments
+
+- `-d`, `--data`: The path to the JSON data file.
+- `-q`, `--query`: The path to a query JSON file.
+- `-head`, `--headers`: The path to the headers file.
+- `-c`, `--count`: The max number of pages to check. (default: 1000)
+- `-t`, `--threads`: The number of threads to use. (default: 1)
+- `-s`, `--spaces`: The spaces to check. (e.g., "space1,space2")
+- `-v`, `--verbose`: Enable verbose mode.
+- `-e`, `--export`: Export the pages to word documents.
+- `-ep`, `--export_path`: The path to export the word documents.
+
 ## Configuration
 
 The crawler can be configured using a JSON file. Below is an example configuration:

@@ -73,6 +73,10 @@ The crawler can be configured using a JSON file. Below is an example configurati
 }
 ```
 
+## Further Questions and Setup
+
+For additional information and setup instructions, please refer to the [setup guide](/docs/setup.md).
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request.

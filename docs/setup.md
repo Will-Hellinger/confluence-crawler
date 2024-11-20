@@ -27,14 +27,12 @@ For multiple spaces:
 ```json
 "spaces": ["Example 1", "Example 2"]
 ```
+
 ## What are the headers.json and pages_query.json?
 
 The `headers.json` file contains the identifiers your computer uses when communicating with different servers. Some sites require verification that you are a real person, so the header essentially says, "I am a person using Chrome, let me in."
 
 The `pages_query.json` file contains data extracted from Confluence. It is used to get a list of available pages by recreating the same request that Confluence's JavaScript would make.
-
-
-
 
 ## Reached the Login Screen?
 

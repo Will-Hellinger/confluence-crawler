@@ -1,5 +1,6 @@
 import os
 import time
+import shutil
 import requests
 import argparse
 import selenium
@@ -298,6 +299,17 @@ if __name__ == '__main__':
 
     if args.query:
         query_path = args.query
+    
+    if not os.path.exists(data_path):
+        print('Failed to find the data directory.')
+        exit(1)
+    
+    if not os.path.exists(info_path):
+        if os.path.exists(default_info_path):
+            shutil.copy(default_info_path, info_path)
+        else:
+            print('Failed to find the default info file.')
+            exit(1)
     
     if os.path.exists(info_path) and os.path.exists(query_path):
         data: dict = data_manager.load_json(info_path)

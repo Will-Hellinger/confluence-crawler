@@ -180,7 +180,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 
     if cookie_cache is False and cookies is not False:
         try:
-            data_manager.dump_json(f'{cache_path}cookies.json', cookies)
+            data_manager.dump_json(f'{cookie_path}', cookies)
         except:
             if verbose:
                 print('Failed to save the cookies.')
@@ -248,7 +248,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Confluence Dead Link Checker')
 
-    parser.add_argument('-d', '--data', type=str, help='The path to the JSON data file.')
+    parser.add_argument('-d', '--data', type=str, help='The path to the data directory.')
     parser.add_argument('-q', '--query', type=str, help='The path to a queryJSON file.')
     parser.add_argument('-head', '--headers', type=str, help='The path to the headers file.')
     parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=1000)
@@ -262,9 +262,9 @@ if __name__ == '__main__':
 
     args: argparse.Namespace = parser.parse_args()
 
-    default_data_path: str = f'.{os.sep}data{os.sep}default_info.json'
-    data_path: str = f'.{os.sep}data{os.sep}info.json'
-    cache_path: str = f'.{os.sep}data{os.sep}cache{os.sep}'
+    data_path: str = f'.{os.sep}data{os.sep}'
+
+    cache_path: str = f'.{data_path}cache{os.sep}'
 
     header_path: str = f'.{os.sep}data{os.sep}headers.json'
     export_path: str = f'.{os.sep}out{os.sep}'
@@ -289,13 +289,18 @@ if __name__ == '__main__':
     if not cache_path.endswith(os.sep):
         cache_path += os.sep
 
-    query_path: str = f'.{os.sep}data{os.sep}pages_query.json'
+    default_info_path: str = f'.{data_path}default_info.json'
+    info_path: str = f'.{data_path}info.json'
+
+    query_path: str = f'.{data_path}pages_query.json'
+
+    cookie_path: str = f'{cache_path}cookies.json'
 
     if args.query:
         query_path = args.query
     
-    if os.path.exists(data_path) and os.path.exists(query_path):
-        data: dict = data_manager.load_json(data_path)
+    if os.path.exists(info_path) and os.path.exists(query_path):
+        data: dict = data_manager.load_json(info_path)
         query: dict = data_manager.load_json(query_path)
     else:
         print('Failed to load the JSON files.')
@@ -313,8 +318,8 @@ if __name__ == '__main__':
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
     
-    if not os.path.exists(f'{cache_path}cookies.json'):
-        with open(f'{cache_path}cookies.json', 'w') as file:
+    if not os.path.exists(f'{cookie_path}'):
+        with open(f'{cookie_path}', 'w') as file:
             file.write('[]')
 
     if not args.spaces and data.get('confluence_info').get('spaces') is None:
@@ -332,4 +337,4 @@ if __name__ == '__main__':
             print('Failed to load the cache.')
             cookie_cache = False # Just to make sure it's set to False
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, f'{cache_path}cookies.json', args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, args.verbose)

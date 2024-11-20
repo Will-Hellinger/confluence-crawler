@@ -342,11 +342,12 @@ if __name__ == '__main__':
 
     if args.spaces:
         spaces = args.spaces.split(',')
-        data['confluence_info']['spaces'] = spaces
 
-        if spaces is None:
-            print('Failed to set the spaces.')
+        if spaces == ['']:
+            print('Please specify the spaces to check.')
             exit(1)
+
+        data['confluence_info']['spaces'] = spaces
 
     if args.cache:
         try:

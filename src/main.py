@@ -177,7 +177,11 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     scan_session: requests.Session = requests.Session() # Create a session to use the cookies
 
     if cookie_cache is False and cookies is not False:
-        data_manager.dump_json(f'{cookie_path}', cookies)
+        try:
+            data_manager.dump_json(f'{cache_path}', cookies)
+        except:
+            if verbose:
+                print('Failed to save the cookies.')
 
     for cookie in cookies:
         scan_session.cookies.set(cookie['name'], cookie['value'])
@@ -316,6 +320,10 @@ if __name__ == '__main__':
         data['confluence_info']['spaces'] = spaces
 
     if args.cache:
-        cookie_cache = data_manager.load_json(f'{cache_path}cookies.json')
+        try:
+            cookie_cache = data_manager.load_json(f'{cache_path}cookies.json')
+        except:
+            print('Failed to load the cache.')
+            cookie_cache = False # Just to make sure it's set to False
 
     main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, f'{cache_path}cookies.json', args.verbose)

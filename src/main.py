@@ -265,9 +265,9 @@ if __name__ == '__main__':
 
     data_path: str = f'.{os.sep}data{os.sep}'
 
-    cache_path: str = f'.{data_path}cache{os.sep}'
+    cache_path: str = f'{data_path}cache{os.sep}'
 
-    header_path: str = f'.{os.sep}data{os.sep}headers.json'
+    header_path: str = f'{data_path}headers.json'
     export_path: str = f'.{os.sep}out{os.sep}'
 
     cookie_cache: bool | dict = False
@@ -291,9 +291,9 @@ if __name__ == '__main__':
         cache_path += os.sep
 
     default_info_path: str = f'.{data_path}default_info.json'
-    info_path: str = f'.{data_path}info.json'
+    info_path: str = f'{data_path}info.json'
 
-    query_path: str = f'.{data_path}pages_query.json'
+    query_path: str = f'{data_path}pages_query.json'
 
     cookie_path: str = f'{cache_path}cookies.json'
 
@@ -305,6 +305,8 @@ if __name__ == '__main__':
         exit(1)
     
     if not os.path.exists(info_path):
+        print(f'Failed to find the info file at {info_path}.')
+
         if os.path.exists(default_info_path):
             shutil.copy(default_info_path, info_path)
         else:
@@ -340,7 +342,11 @@ if __name__ == '__main__':
 
     if args.spaces:
         spaces = args.spaces.split(',')
-        data['confluence_info']['spaces'] = spaces
+        data.get('confluence_info', {}).get('spaces', None) = spaces
+
+        if spaces is None:
+            print('Failed to set the spaces.')
+            exit(1)
 
     if args.cache:
         try:

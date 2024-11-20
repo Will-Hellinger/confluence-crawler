@@ -336,13 +336,13 @@ if __name__ == '__main__':
         with open(f'{cookie_path}', 'w') as file:
             file.write('[]')
 
-    if not args.spaces and data.get('confluence_info').get('spaces') is None:
+    if not args.spaces and data.get('confluence_info', {}).get('spaces', None) is None:
         print('Please specify the spaces to check.')
         exit(1)
 
     if args.spaces:
         spaces = args.spaces.split(',')
-        data.get('confluence_info', {}).get('spaces', None) = spaces
+        data['confluence_info']['spaces'] = spaces
 
         if spaces is None:
             print('Failed to set the spaces.')

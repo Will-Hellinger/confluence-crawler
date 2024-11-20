@@ -4,3 +4,4 @@ __pycache__
 info.json
 
 /out
+data/cache/

@@ -104,7 +104,7 @@ def info_thread() -> None:
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, cookie_cache: bool | dict, cookie_path: str, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -141,25 +141,43 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     link_ignore_types: list[str] = data.get('link_ignore_types', [])
     card_info_skip: dict = data.get('info_skip', {})
 
-    # Open the browser and login to Confluence to get the cookies
-    if verbose:
-        browser_start_time: float = time.time()
-        print(f'Setup took {time.time() - start_time:.2f} seconds.')
-        print('Opening the browser...')
+    if cookie_cache is not False:
+        for cookie in cookie_cache:
+            cookie_expirey: int | None = cookie.get('expiry', None)
 
-    webdriver: selenium.webdriver = driver.get_driver(data.get('browser', 'Chrome').title())
-    cookies: bool | dict = confluence_manager.login_prompt(confluence_info.get('base_url', ''), webdriver)
-    webdriver.quit()
+            if cookie_expirey is None:
+                continue
+
+            if cookie_expirey <= time.time():
+                cookie_cache = False
+                break
+
+        cookies: dict = cookie_cache
+
+
+    # Open the browser and login to Confluence to get the cookies
+    if cookie_cache is False:
+        if verbose:
+            browser_start_time: float = time.time()
+            print(f'Setup took {time.time() - start_time:.2f} seconds.')
+            print('Opening the browser...')
+
+        webdriver: selenium.webdriver = driver.get_driver(data.get('browser', 'Chrome').title())
+        cookies: bool | dict = confluence_manager.login_prompt(confluence_info.get('base_url', ''), webdriver)
+        webdriver.quit()
 
     if cookies is False:
         print('Failed to login to Confluence.')
         exit(1)
     
-    if verbose:
+    if verbose and cookie_cache is False:
         print(f'Browser setup took {time.time() - browser_start_time:.2f} seconds.')
         print('Checking pages...')
 
     scan_session: requests.Session = requests.Session() # Create a session to use the cookies
+
+    if cookie_cache is False and cookies is not False:
+        data_manager.dump_json(f'{cookie_path}', cookies)
 
     for cookie in cookies:
         scan_session.cookies.set(cookie['name'], cookie['value'])
@@ -245,6 +263,8 @@ if __name__ == '__main__':
     header_path: str = f'.{os.sep}data{os.sep}headers.json'
     export_path: str = f'.{os.sep}out{os.sep}'
 
+    cookie_cache: bool | dict = False
+
     if args.data:
         data_path = args.data
     
@@ -256,6 +276,12 @@ if __name__ == '__main__':
     
     if not export_path.endswith(os.sep):
         export_path += os.sep
+
+    if args.cache_path:
+        cache_path = args.cache_path
+    
+    if not cache_path.endswith(os.sep):
+        cache_path += os.sep
 
     query_path: str = f'.{os.sep}data{os.sep}pages_query.json'
 
@@ -289,4 +315,7 @@ if __name__ == '__main__':
         spaces = args.spaces.split(',')
         data['confluence_info']['spaces'] = spaces
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, args.verbose)
+    if args.cache:
+        cookie_cache = data_manager.load_json(f'{cache_path}cookies.json')
+
+    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, f'{cache_path}cookies.json', args.verbose)

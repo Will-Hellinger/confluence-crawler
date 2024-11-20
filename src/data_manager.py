@@ -32,3 +32,15 @@ def load_json(file_path: str | None) -> dict | None:
             return json.load(f)
         
     return None
+
+
+def dump_json(file_path: str, data: dict) -> None:
+    """
+    Dump a dictionary to a JSON file.
+
+    :param file_path: The path to the JSON file.
+    :param data: The data to dump.
+    """
+
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)

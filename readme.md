@@ -8,15 +8,14 @@ This project is a Confluence Crawler that scans Confluence pages for dead links.
 
 - Crawls Confluence pages to find dead links
 - Generates a report of broken links
-- Configurable to scan specific spaces or pages
 
 ## Installation
 
 To install the Confluence Crawler, clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/yourusername/confluence-dead-links.git
-cd confluence-dead-links
+git clone https://github.com/Will-Hellinger/confluence-crawler.git
+cd confluence-crawler
 pip install -r requirements.txt
 ```
 
@@ -39,6 +38,8 @@ python ./src/main.py -c [page count] -t [thread count]
 - `-v`, `--verbose`: Enable verbose mode.
 - `-e`, `--export`: Export the pages to word documents.
 - `-ep`, `--export_path`: The path to export the word documents.
+- `-cache`, `--cache`: Use the cache.
+- `-cache_path`, `--cache_path`: The path to the cache.
 
 ## Configuration
 

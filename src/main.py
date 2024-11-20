@@ -142,18 +142,20 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     card_info_skip: dict = data.get('info_skip', {})
 
     if cookie_cache is not False:
-        for cookie in cookie_cache:
-            cookie_expirey: int | None = cookie.get('expiry', None)
+        if len(cookie_cache) == 0:
+            cookie_cache = False
+        else:
+            for cookie in cookie_cache:
+                cookie_expirey: int | None = cookie.get('expiry', None)
 
-            if cookie_expirey is None:
-                continue
+                if cookie_expirey is None:
+                    continue
 
-            if cookie_expirey <= time.time():
-                cookie_cache = False
-                break
+                if cookie_expirey <= time.time():
+                    cookie_cache = False
+                    break
 
-        cookies: dict = cookie_cache
-
+            cookies: dict = cookie_cache
 
     # Open the browser and login to Confluence to get the cookies
     if cookie_cache is False:
@@ -178,7 +180,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 
     if cookie_cache is False and cookies is not False:
         try:
-            data_manager.dump_json(f'{cache_path}', cookies)
+            data_manager.dump_json(f'{cache_path}cookies.json', cookies)
         except:
             if verbose:
                 print('Failed to save the cookies.')
@@ -310,6 +312,10 @@ if __name__ == '__main__':
 
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
+    
+    if not os.path.exists(f'{cache_path}cookies.json'):
+        with open(f'{cache_path}cookies.json', 'w') as file:
+            file.write('[]')
 
     if not args.spaces and data.get('confluence_info').get('spaces') is None:
         print('Please specify the spaces to check.')

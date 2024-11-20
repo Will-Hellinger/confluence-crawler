@@ -309,6 +309,10 @@ if __name__ == '__main__':
 
         if os.path.exists(default_info_path):
             shutil.copy(default_info_path, info_path)
+
+            print(f'Copied the default info file to {info_path}. Go add the Confluence info!')
+            exit(1)
+            
         else:
             print('Failed to find the default info file.')
             exit(1)

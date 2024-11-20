@@ -15,7 +15,7 @@ To install the Confluence Crawler, clone the repository and install the dependen
 
 ```bash
 git clone https://github.com/Will-Hellinger/confluence-crawler.git
-cd confluence-dead-links
+cd confluence-crawler
 pip install -r requirements.txt
 ```
 
@@ -24,7 +24,7 @@ pip install -r requirements.txt
 To run the crawler, use the following command:
 
 ```
-python ./src/main.py -c [page count] -t [thread count]
+python ./src/main.py -c [page count] -t [thread count] --cache [optional]
 ```
 
 ## Arguments
@@ -38,6 +38,8 @@ python ./src/main.py -c [page count] -t [thread count]
 - `-v`, `--verbose`: Enable verbose mode.
 - `-e`, `--export`: Export the pages to word documents.
 - `-ep`, `--export_path`: The path to export the word documents.
+- `-cache`, `--cache`: Use the cache.
+- `-cache_path`, `--cache_path`: The path to the cache.
 
 ## Configuration
 

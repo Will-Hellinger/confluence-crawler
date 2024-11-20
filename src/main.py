@@ -1,5 +1,6 @@
 import os
 import time
+import shutil
 import requests
 import argparse
 import selenium
@@ -104,7 +105,7 @@ def info_thread() -> None:
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, cookie_cache: bool | dict, cookie_path: str, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -141,25 +142,49 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     link_ignore_types: list[str] = data.get('link_ignore_types', [])
     card_info_skip: dict = data.get('info_skip', {})
 
-    # Open the browser and login to Confluence to get the cookies
-    if verbose:
-        browser_start_time: float = time.time()
-        print(f'Setup took {time.time() - start_time:.2f} seconds.')
-        print('Opening the browser...')
+    if cookie_cache is not False:
+        if len(cookie_cache) == 0:
+            cookie_cache = False
+        else:
+            for cookie in cookie_cache:
+                cookie_expirey: int | None = cookie.get('expiry', None)
 
-    webdriver: selenium.webdriver = driver.get_driver(data.get('browser', 'Chrome').title())
-    cookies: bool | dict = confluence_manager.login_prompt(confluence_info.get('base_url', ''), webdriver)
-    webdriver.quit()
+                if cookie_expirey is None:
+                    continue
+
+                if cookie_expirey <= time.time():
+                    cookie_cache = False
+                    break
+
+            cookies: dict = cookie_cache
+
+    # Open the browser and login to Confluence to get the cookies
+    if cookie_cache is False:
+        if verbose:
+            browser_start_time: float = time.time()
+            print(f'Setup took {time.time() - start_time:.2f} seconds.')
+            print('Opening the browser...')
+
+        webdriver: selenium.webdriver = driver.get_driver(data.get('browser', 'Chrome').title())
+        cookies: bool | dict = confluence_manager.login_prompt(confluence_info.get('base_url', ''), webdriver)
+        webdriver.quit()
 
     if cookies is False:
         print('Failed to login to Confluence.')
         exit(1)
     
-    if verbose:
+    if verbose and cookie_cache is False:
         print(f'Browser setup took {time.time() - browser_start_time:.2f} seconds.')
         print('Checking pages...')
 
     scan_session: requests.Session = requests.Session() # Create a session to use the cookies
+
+    if cookie_cache is False and cookies is not False:
+        try:
+            data_manager.dump_json(f'{cookie_path}', cookies)
+        except:
+            if verbose:
+                print('Failed to save the cookies.')
 
     for cookie in cookies:
         scan_session.cookies.set(cookie['name'], cookie['value'])
@@ -224,7 +249,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Confluence Dead Link Checker')
 
-    parser.add_argument('-d', '--data', type=str, help='The path to the JSON data file.')
+    parser.add_argument('-d', '--data', type=str, help='The path to the data directory.')
     parser.add_argument('-q', '--query', type=str, help='The path to a queryJSON file.')
     parser.add_argument('-head', '--headers', type=str, help='The path to the headers file.')
     parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=1000)
@@ -233,13 +258,19 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
     parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
     parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
+    parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
+    parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
 
     args: argparse.Namespace = parser.parse_args()
 
-    default_data_path: str = f'.{os.sep}data{os.sep}default_info.json'
-    data_path: str = f'.{os.sep}data{os.sep}info.json'
-    header_path: str = f'.{os.sep}data{os.sep}headers.json'
+    data_path: str = f'.{os.sep}data{os.sep}'
+
+    cache_path: str = f'{data_path}cache{os.sep}'
+
+    header_path: str = f'{data_path}headers.json'
     export_path: str = f'.{os.sep}out{os.sep}'
+
+    cookie_cache: bool | dict = False
 
     if args.data:
         data_path = args.data
@@ -253,13 +284,37 @@ if __name__ == '__main__':
     if not export_path.endswith(os.sep):
         export_path += os.sep
 
-    query_path: str = f'.{os.sep}data{os.sep}pages_query.json'
+    if args.cache_path:
+        cache_path = args.cache_path
+    
+    if not cache_path.endswith(os.sep):
+        cache_path += os.sep
+
+    default_info_path: str = f'.{data_path}default_info.json'
+    info_path: str = f'{data_path}info.json'
+
+    query_path: str = f'{data_path}pages_query.json'
+
+    cookie_path: str = f'{cache_path}cookies.json'
 
     if args.query:
         query_path = args.query
     
-    if os.path.exists(data_path) and os.path.exists(query_path):
-        data: dict = data_manager.load_json(data_path)
+    if not os.path.exists(data_path):
+        print('Failed to find the data directory.')
+        exit(1)
+    
+    if not os.path.exists(info_path):
+        print(f'Failed to find the info file at {info_path}.')
+
+        if os.path.exists(default_info_path):
+            shutil.copy(default_info_path, info_path)
+        else:
+            print('Failed to find the default info file.')
+            exit(1)
+    
+    if os.path.exists(info_path) and os.path.exists(query_path):
+        data: dict = data_manager.load_json(info_path)
         query: dict = data_manager.load_json(query_path)
     else:
         print('Failed to load the JSON files.')
@@ -274,12 +329,31 @@ if __name__ == '__main__':
     if not os.path.exists(export_path):
         os.makedirs(export_path)
 
-    if not args.spaces and data.get('confluence_info').get('spaces') is None:
+    if not os.path.exists(cache_path):
+        os.makedirs(cache_path)
+    
+    if not os.path.exists(f'{cookie_path}'):
+        with open(f'{cookie_path}', 'w') as file:
+            file.write('[]')
+
+    if not args.spaces and data.get('confluence_info', {}).get('spaces', None) is None:
         print('Please specify the spaces to check.')
         exit(1)
 
     if args.spaces:
         spaces = args.spaces.split(',')
+
+        if spaces == ['']:
+            print('Please specify the spaces to check.')
+            exit(1)
+
         data['confluence_info']['spaces'] = spaces
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, args.verbose)
+    if args.cache:
+        try:
+            cookie_cache = data_manager.load_json(f'{cache_path}cookies.json')
+        except:
+            print('Failed to load the cache.')
+            cookie_cache = False # Just to make sure it's set to False
+
+    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, args.verbose)

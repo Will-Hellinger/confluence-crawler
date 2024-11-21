@@ -40,6 +40,7 @@ python ./src/main.py -c [page count] -t [thread count] --cache [optional]
 - `-ep`, `--export_path`: The path to export the word documents.
 - `-cache`, `--cache`: Use the cache.
 - `-cache_path`, `--cache_path`: The path to the cache.
+- `-p`, `--password`: The master password to encrypt and decrypt the cache
 
 ## Configuration
 
@@ -53,6 +54,7 @@ The crawler can be configured using a JSON file. Below is an example configurati
 ```json
 {
     "browser": "Chrome",
+    "master_password": null,
     "confluence_info" : {
         "base_url": null,
         "login_url" : "/wiki/spaces",

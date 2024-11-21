@@ -264,7 +264,8 @@ if __name__ == '__main__':
     parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
     parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
     parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
-    parser.add_argument('-p', '--password', type=str, help='The master password.')
+    parser.add_argument('-p', '--password', type=str, help='The master password to encrypt and decrypt the cache.')
+    parser.add_argument('-fp', '--forgot_password', action='store_true', help='Forgot the master password.')
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -371,6 +372,10 @@ if __name__ == '__main__':
         master_key: bytes | None = data_manager.generate_key(master_password)
 
         master_password: str | None = None # Clear the master password
+
+        if args.forgot_password and os.path.exists(cookie_path):
+            os.remove(cookie_path)
+            print('Deleted the cache.')
         
         if not os.path.exists(f'{cookie_path}'):
             with open(f'{cookie_path}', 'wb') as file:

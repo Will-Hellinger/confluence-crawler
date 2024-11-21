@@ -40,7 +40,9 @@ python ./src/main.py -c [page count] -t [thread count] --cache [optional]
 - `-ep`, `--export_path`: The path to export the word documents.
 - `-cache`, `--cache`: Use the cache.
 - `-cache_path`, `--cache_path`: The path to the cache.
-- `-p`, `--password`: The master password to encrypt and decrypt the cache
+- `-p`, `--password`: The master password to encrypt and decrypt the cache.
+- `-fp`, `--forgot_password`: Forgot the master password.
+    - Using this launch as argument will remove the cache and by extension the old master password associated with it.
 
 ## Configuration
 

@@ -256,7 +256,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', type=str, help='The path to the data directory.')
     parser.add_argument('-q', '--query', type=str, help='The path to a queryJSON file.')
     parser.add_argument('-head', '--headers', type=str, help='The path to the headers file.')
-    parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=1000)
+    parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=250)
     parser.add_argument('-t', '--threads', type=int, help='The number of threads to use.', default=1)
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')

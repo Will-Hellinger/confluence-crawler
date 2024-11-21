@@ -29,7 +29,7 @@ python ./src/main.py -c [page count] -t [thread count] --cache [optional]
 
 ## Arguments
 
-- `-d`, `--data`: The path to the JSON data file.
+- `-d`, `--data`: The path to the data directory.
 - `-q`, `--query`: The path to a query JSON file.
 - `-head`, `--headers`: The path to the headers file.
 - `-c`, `--count`: The max number of pages to check. (default: 1000)

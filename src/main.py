@@ -1,6 +1,8 @@
 import os
 import time
+import json
 import shutil
+import getpass
 import requests
 import argparse
 import selenium
@@ -105,7 +107,7 @@ def info_thread() -> None:
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, cookie_cache: bool | dict, cookie_path: str, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -125,7 +127,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     confluence_info: dict = data.get('confluence_info', {})
     confluence_base_url: str = confluence_info.get('base_url', '')
     confluence_query_url: str = f'{confluence_base_url}{confluence_info.get('query_url', '')}'
-    confluence_page_info_url: str = f'{confluence_base_url}{confluence_info.get('page_info_url', '')}'
+    
     spaces: list[str] = confluence_info.get('spaces', [])
 
     if None in confluence_info.values():
@@ -179,9 +181,11 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 
     scan_session: requests.Session = requests.Session() # Create a session to use the cookies
 
-    if cookie_cache is False and cookies is not False:
+    # Save the cookies to the cache
+    if cookie_cache is False and cookies is not False and master_key is not None:
         try:
-            data_manager.dump_json(f'{cookie_path}', cookies)
+            with open(cookie_path, 'wb') as file:
+                file.write(data_manager.encrypt_data(json.dumps(cookies), master_key))
         except:
             if verbose:
                 print('Failed to save the cookies.')
@@ -252,7 +256,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', type=str, help='The path to the data directory.')
     parser.add_argument('-q', '--query', type=str, help='The path to a queryJSON file.')
     parser.add_argument('-head', '--headers', type=str, help='The path to the headers file.')
-    parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=1000)
+    parser.add_argument('-c', '--count', type=int, help='The max number of pages to check.', default=250)
     parser.add_argument('-t', '--threads', type=int, help='The number of threads to use.', default=1)
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
@@ -260,6 +264,8 @@ if __name__ == '__main__':
     parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
     parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
     parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
+    parser.add_argument('-p', '--password', type=str, help='The master password to encrypt and decrypt the cache.')
+    parser.add_argument('-fp', '--forgot_password', action='store_true', help='Forgot the master password.')
 
     args: argparse.Namespace = parser.parse_args()
 
@@ -295,7 +301,9 @@ if __name__ == '__main__':
 
     query_path: str = f'{data_path}pages_query.json'
 
-    cookie_path: str = f'{cache_path}cookies.json'
+    cookie_path: str = f'{cache_path}cookies.enc'
+
+    master_key: bytes | None = None
 
     if args.query:
         query_path = args.query
@@ -335,10 +343,6 @@ if __name__ == '__main__':
 
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
-    
-    if not os.path.exists(f'{cookie_path}'):
-        with open(f'{cookie_path}', 'w') as file:
-            file.write('[]')
 
     if not args.spaces and data.get('confluence_info', {}).get('spaces', None) is None:
         print('Please specify the spaces to check.')
@@ -354,10 +358,39 @@ if __name__ == '__main__':
         data['confluence_info']['spaces'] = spaces
 
     if args.cache:
+        if data.get('master_password', None) is not None:
+            master_password: str | None = data.get('master_password', None)
+        elif args.password is not None:
+            master_password: str | None = args.password
+        else:
+            master_password: str | None = getpass.getpass('Please enter the master password: ') #Hide the password while typing
+        
+        if master_password is None:
+            print('Caching requires a master password.')
+            exit(1)
+        
+        master_key: bytes | None = data_manager.generate_key(master_password)
+
+        master_password: str | None = None # Clear the master password
+
+        if args.forgot_password and os.path.exists(cookie_path):
+            os.remove(cookie_path)
+            print('Deleted the cache.')
+        
+        if not os.path.exists(f'{cookie_path}'):
+            with open(f'{cookie_path}', 'wb') as file:
+                file.write(data_manager.encrypt_data(json.dumps([]), master_key))
+            
         try:
-            cookie_cache = data_manager.load_json(f'{cache_path}cookies.json')
-        except:
+            cookie_cache_raw = data_manager.decrypt_data(open(cookie_path).read(), master_key)
+            cookie_cache = json.loads(cookie_cache_raw)
+
+        except Exception as error:
             print('Failed to load the cache.')
+
+            if args.verbose:
+                print(f'error: {error}')
+            
             cookie_cache = False # Just to make sure it's set to False
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, master_key, args.verbose)

@@ -24,12 +24,12 @@ pip install -r requirements.txt
 To run the crawler, use the following command:
 
 ```
-python ./src/main.py -c [page count] -t [thread count] --cache [optional]
+python ./src/main.py -c [max page count to check for (default is 250)] -t [thread count] --cache [optional]
 ```
 
 ## Arguments
 
-- `-d`, `--data`: The path to the JSON data file.
+- `-d`, `--data`: The path to the data directory.
 - `-q`, `--query`: The path to a query JSON file.
 - `-head`, `--headers`: The path to the headers file.
 - `-c`, `--count`: The max number of pages to check. (default: 1000)
@@ -40,6 +40,9 @@ python ./src/main.py -c [page count] -t [thread count] --cache [optional]
 - `-ep`, `--export_path`: The path to export the word documents.
 - `-cache`, `--cache`: Use the cache.
 - `-cache_path`, `--cache_path`: The path to the cache.
+- `-p`, `--password`: The master password to encrypt and decrypt the cache.
+- `-fp`, `--forgot_password`: Forgot the master password.
+    - Using this launch as argument will remove the cache and by extension the old master password associated with it.
 
 ## Configuration
 
@@ -53,6 +56,7 @@ The crawler can be configured using a JSON file. Below is an example configurati
 ```json
 {
     "browser": "Chrome",
+    "master_password": null,
     "confluence_info" : {
         "base_url": null,
         "login_url" : "/wiki/spaces",

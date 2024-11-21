@@ -8,6 +8,17 @@ Please refer to the [readme.md](/readme.md) for the basics of running the projec
 
 If the project hasn't run before, you won't have an info.json file. You can either copy the default_info.json file and rename it to info.json, or launch the project once to generate the file automatically.
 
+## What is the master password?
+
+The master password is used to encrypt and decrypt your cache. This ensures that only you can access your cache. If someone else obtains your cache, they will need to know your master password to use it. Dont forget it!
+
+## Do I need to add my master password to this file?
+
+No! The program can obtain your master password in three ways:
+1. By checking the `info.json` file.
+2. By passing it as a command-line argument.
+3. By prompting you for it if the first two methods fail <b>(recommended, as it hides your input).</b>
+
 ## Adding Space Information
 
 Replace each instance of "null" with the appropriate information. To find the specific `base_url` and `space` you need, visit the space and copy the base URL and space ID from your workspace link. The base URL is represented as `https://your_confluence_link_here.com` and the space ID is represented as `SPACE_GOES_HERE` in the example below.

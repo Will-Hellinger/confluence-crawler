@@ -1,5 +1,6 @@
 {
     "browser": "Chrome",
+    "master_password" : null,
     "confluence_info" : {
         "base_url": null,
         "login_url" : "/wiki/spaces",

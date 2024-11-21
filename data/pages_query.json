@@ -3,8 +3,8 @@
     "variables":{
         "includeRecommended" : false,
         "spaceId":"",
-        "first" : 500,
-        "maxNumberOfResults" : 500,
+        "first" : "500",
+        "maxNumberOfResults" : "500",
         "searchText" : "",
         "filters" : {
             "spaces" : {

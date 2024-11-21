@@ -61,8 +61,8 @@ def get_pages(session: requests.Session, query_url: str, query: dict) -> list[di
     """
 
     response = session.post(query_url, json=query, headers={'Content-Length': str(len(query)), 'Content-Type': 'application/json'})
-    
-    pages: list[dict] | None = response.json()['data']['confluenceContentSearch']['nodes']
+
+    pages: list[dict] | None = response.json().get('data', {}).get('confluenceContentSearch', {}).get('nodes', None)
 
     return pages
 

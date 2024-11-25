@@ -57,7 +57,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
                 page_data: requests.Response = session.get(page_download_link)
 
                 if page_data.status_code == 200:
-                    with open(f'{export_path}{value}.doc', 'wb') as file:
+                    with open(f'{export_path}{value.replace(os.sep, '_')}.doc', 'wb') as file:
                         file.write(page_data.content)
 
         for link, status in page_links.items():
@@ -68,7 +68,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
         
         thread_info[thread_number] = info
     
-    session = requests.Session() # Clear the session
+    session = None # Clear the session
 
 
 def info_thread() -> None:
@@ -81,7 +81,7 @@ def info_thread() -> None:
     global thread_info
 
     while True:
-        status_lines = []
+        status_lines: list[str] = []
 
         if thread_info == {}:
             print('Waiting for threads to start...')
@@ -118,6 +118,9 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     :param thread_count: The number of threads to use.
     :param export: Export the pages to word documents.
     :param export_path: The path to export the word documents.
+    :param cookie_cache: The cookie cache.
+    :param cookie_path: The path to the cookie cache.
+    :param master_key: The master key to use.
     :param verbose: Enable verbose mode.
     :return: None
     """
@@ -211,18 +214,18 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     scraping_start_time: float = time.time()
 
     for i in range(0, thread_count):
-        session = requests.Session()
+        session: requests.Session = requests.Session()
         session.cookies.update(scan_session.cookies)
 
         if verbose:
             print(f'Starting thread {i}...')
 
-        thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, export_path, verbose))
+        thread: threading.Thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, export_path, verbose))
         threads.append(thread)
         thread.start()
     
     if verbose:
-        info_thread_thread = threading.Thread(target=info_thread)
+        info_thread_thread: threading.Thread = threading.Thread(target=info_thread)
         info_thread_thread.start()
     
     for thread in threads:

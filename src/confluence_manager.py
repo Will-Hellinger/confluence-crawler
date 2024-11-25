@@ -60,7 +60,7 @@ def get_pages(session: requests.Session, query_url: str, query: dict) -> list[di
     :return: The pages from Confluence.
     """
 
-    response = session.post(query_url, json=query, headers={'Content-Length': str(len(query)), 'Content-Type': 'application/json'})
+    response: requests.Response = session.post(query_url, json=query, headers={'Content-Length': str(len(query)), 'Content-Type': 'application/json'})
 
     pages: list[dict] | None = response.json().get('data', {}).get('confluenceContentSearch', {}).get('nodes', None)
 
@@ -81,7 +81,7 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     :return: The information for the page.
     """
 
-    response = session.get(f'{page_info_url}{page_id}')
+    response: requests.Response = session.get(f'{page_info_url}{page_id}')
 
     data: dict = {}
 
@@ -199,6 +199,7 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
     :param page: The page to test.
     :param base_url: The base URL of the Confluence site.
     :param link_ignore_types: The types of links to ignore.
+    :param timeout: The timeout for the request.
     :return: The links on the page.
     """
 

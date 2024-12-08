@@ -190,7 +190,7 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     return data
 
 
-def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], timeout: int) -> dict:
+def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], ignore_links: list[str], timeout: int) -> dict:
     """
     Test the links on a page.
 
@@ -220,6 +220,9 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
         #Assume it's referencing itself
         if value.startswith('/'):
             value = f'{base_url}{value}'
+        
+        if value in ignore_links:
+            continue
 
         try:
             response = session.get(value, timeout=timeout, headers=headers)

@@ -70,3 +70,17 @@ def dump_json(file_path: str, data: dict) -> None:
 
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
+    
+
+def check_exists(file_path: str):
+    """
+    Check if a file exists.
+
+    :param file_path: The path to the file.
+    :return: True if the file exists, False otherwise.
+    """
+
+    if os.path.exists(file_path):
+        return True
+    
+    raise FileNotFoundError(f"The file {file_path} does not exist.")

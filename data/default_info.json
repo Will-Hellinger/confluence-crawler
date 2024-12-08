@@ -11,6 +11,9 @@
     "timeout" : 3,
     "default_card_panel_name" : "Basic Info",
     "link_ignore_types" : ["mailto", "tel", "data", "file"],
+    "ignore_links" : [
+        "http://example.com"
+    ],
     "info_skip" : {
         "default_card_panel_name" : ["Operations", "Tiny Link: (useful for email)"],
         "Labels" : true,

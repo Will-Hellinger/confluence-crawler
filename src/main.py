@@ -13,10 +13,7 @@ import data_manager
 import confluence_manager
 
 
-thread_info: dict = {}
-
-
-def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], timeout: int, export: bool, export_path: str, verbose: bool) -> None:
+def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], ignore_links: list[str], timeout: int, export: bool, export_path: str, verbose: bool) -> None:
     """
     Thread function to scrape the pages.
 
@@ -28,6 +25,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
     :param default_card_panel_name: The default card panel name.
     :param card_info_skip: The card info to skip.
     :param link_ignore_types: The types of links to ignore.
+    :param ignore_links: The links to ignore.
     :param timeout: The timeout to use.
     :param export: Export the pages to word documents.
     :param export_path: The path to export the word documents.
@@ -48,7 +46,7 @@ def scrape_thread(thread_number: int, session: requests.Session, headers: dict, 
         info['current_page'] = value
         info['page_count'] += 1
 
-        page_links: dict = confluence_manager.test_page_links(session, headers, page, confluence_base_url, link_ignore_types, timeout)
+        page_links: dict = confluence_manager.test_page_links(session, headers, page, confluence_base_url, link_ignore_types, ignore_links, timeout)
 
         if export:
             page_download_link: str = page.get(default_card_panel_name, {}).get('Export As', {}).get('Word', None)
@@ -92,7 +90,7 @@ def info_thread() -> None:
         threads_alive: bool = False
 
         for thread_number, info in thread_info.items():
-            status_lines.append(f'T{thread_number}: {info["page_count"]}/{info["page_count_given"]} : {info["page_count"]/info["page_count_given"] * 100:.2f}%')
+            status_lines.append(f'T{thread_number}: {info["page_count"]/info["page_count_given"] * 100:.2f}%')
 
             if not (info['page_count'] >= info['page_count_given']):
                 threads_alive = True
@@ -125,6 +123,8 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     :return: None
     """
 
+    global thread_info
+
     start_time: float = time.time()
 
     confluence_info: dict = data.get('confluence_info', {})
@@ -145,6 +145,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
 
     default_card_panel_name: str = data.get('default_card_panel_name', 'Basic Info')
     link_ignore_types: list[str] = data.get('link_ignore_types', [])
+    ignore_links: list[str] = data.get('ignore_links', [])
     card_info_skip: dict = data.get('info_skip', {})
 
     if cookie_cache is not False:
@@ -220,7 +221,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
         if verbose:
             print(f'Starting thread {i}...')
 
-        thread: threading.Thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, timeout, export, export_path, verbose))
+        thread: threading.Thread = threading.Thread(target=scrape_thread, args=(i, session, headers, page_chunks[i], confluence_info, default_card_panel_name, card_info_skip, link_ignore_types, ignore_links, timeout, export, export_path, verbose))
         threads.append(thread)
         thread.start()
     
@@ -264,7 +265,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
     parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
-    parser.add_argument('-ep', '--export_path', type=str, help='The path to export the word documents.')
+    parser.add_argument('-op', '--out_path', type=str, help='The path to the out data (logs and exports). Defaults to directory program is run in.')
     parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
     parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
     parser.add_argument('-p', '--password', type=str, help='The master password to encrypt and decrypt the cache.')
@@ -272,32 +273,43 @@ if __name__ == '__main__':
 
     args: argparse.Namespace = parser.parse_args()
 
+    # One of the most import paths
     data_path: str = f'.{os.sep}data{os.sep}'
-
-    cache_path: str = f'{data_path}cache{os.sep}'
-
-    header_path: str = f'{data_path}headers.json'
-    export_path: str = f'.{os.sep}out{os.sep}'
-
-    cookie_cache: bool | dict = False
 
     if args.data:
         data_path = args.data
     
-    if args.headers:
-        header_path = args.headers
+    if not data_path.endswith(os.sep):
+        data_path += os.sep
     
-    if args.export_path:
-        export_path = args.export_path
-    
-    if not export_path.endswith(os.sep):
-        export_path += os.sep
+    # One of the most import paths
+    out_path: str = f'.{os.sep}out{os.sep}'
+
+    if args.out_path:
+        out_path = args.out_path
+
+    if not out_path.endswith(os.sep):
+        out_path += os.sep
+
+    # One of the most import paths
+    cache_path: str = f'{data_path}cache{os.sep}'
 
     if args.cache_path:
         cache_path = args.cache_path
-    
+
     if not cache_path.endswith(os.sep):
         cache_path += os.sep
+
+    # One of the most import paths
+    header_path: str = f'{data_path}headers.json'
+
+    if args.headers:
+        header_path = args.headers
+
+    export_path: str = f'{out_path}export{os.sep}'
+    logs_path: str = f'{out_path}logs{os.sep}'
+
+    cookie_cache: bool | dict = False
 
     default_info_path: str = f'.{data_path}default_info.json'
     info_path: str = f'{data_path}info.json'
@@ -312,8 +324,8 @@ if __name__ == '__main__':
         query_path = args.query
     
     if not os.path.exists(data_path):
-        print('Failed to find the data directory.')
-        exit(1)
+        os.makedirs(out_path)
+        print('Failed to find the data directory. Created the directory.')
     
     if not os.path.exists(info_path):
         print(f'Failed to find the info file at {info_path}.')
@@ -341,8 +353,14 @@ if __name__ == '__main__':
         headers = {}
         print('Failed to load the headers file.')
     
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+    
     if not os.path.exists(export_path):
         os.makedirs(export_path)
+
+    if not os.path.exists(logs_path):
+        os.makedirs(logs_path)
 
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
@@ -395,5 +413,7 @@ if __name__ == '__main__':
                 print(f'error: {error}')
             
             cookie_cache = False # Just to make sure it's set to False
+
+    thread_info: dict = {} # Define here!
 
     main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, master_key, args.verbose)

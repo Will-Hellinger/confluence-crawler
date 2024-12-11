@@ -105,7 +105,32 @@ def info_thread() -> None:
         time.sleep(0.5)
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
+def generate_log(thread_info: dict, logs_path: str, verbose: bool) -> None:
+    """
+    Generate the log.
+
+    :param thread_info: The thread info.
+    :param logs_path: The path to the logs.
+    :param verbose: Enable verbose mode.
+    :return: None
+    """
+
+    date: str = time.strftime('%Y-%m-%d_%H-%M-%S')
+
+    if verbose:
+        print(f'Generating log at {logs_path}log_{date}.txt...')
+
+    with open(f'{logs_path}log_{date}.txt', 'w') as file:
+        for thread_number, info in thread_info.items():
+            file.write(f'Thread {thread_number}:\n')
+
+            for link, page in info['failed_links'].items():
+                file.write(f'{link} : {page}\n')
+
+            file.write('\n')
+
+
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, logs_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -116,6 +141,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     :param thread_count: The number of threads to use.
     :param export: Export the pages to word documents.
     :param export_path: The path to export the word documents.
+    :param logs_path: The path to the logs.
     :param cookie_cache: The cookie cache.
     :param cookie_path: The path to the cookie cache.
     :param master_key: The master key to use.
@@ -234,6 +260,8 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     
     if verbose:
         info_thread_thread.join()
+    
+    generate_log(thread_info, logs_path, verbose)
 
     for thread_number, info in thread_info.items():
         link_count += info['link_count']
@@ -416,4 +444,4 @@ if __name__ == '__main__':
 
     thread_info: dict = {} # Define here!
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, cookie_cache, cookie_path, master_key, args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, export_path, logs_path, cookie_cache, cookie_path, master_key, args.verbose)

@@ -199,6 +199,7 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
     :param page: The page to test.
     :param base_url: The base URL of the Confluence site.
     :param link_ignore_types: The types of links to ignore.
+    :param ignore_links: The links to ignore.
     :param timeout: The timeout for the request.
     :return: The links on the page.
     """
@@ -230,12 +231,12 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
         except Exception as error:
             data[value] = error
 
+            # This assumes that Upgrade-Insecure-Requests is disabled in the headers.
             if value.startswith('http://') and not value.startswith('https://'):
                 try:
                     response = session.get(value.replace('http://', 'https://', 1), timeout=timeout, headers=headers)
                     data[value] = response.status_code
                 except requests.exceptions.RequestException:
                     data[value] = 'Error connecting'
-
     
     return data

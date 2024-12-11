@@ -37,6 +37,7 @@ python ./src/main.py -c [max page count to check for (default is 250)] -t [threa
 - `-s`, `--spaces`: The spaces to check. (e.g., "space1,space2")
 - `-v`, `--verbose`: Enable verbose mode.
 - `-e`, `--export`: Export the pages to word documents.
+- `-l`, `--log` : Enable logging.
 - `-ep`, `--export_path`: The path to export the word documents.
 - `-cache`, `--cache`: Use the cache.
 - `-cache_path`, `--cache_path`: The path to the cache.
@@ -56,7 +57,7 @@ The crawler can be configured using a JSON file. Below is an example configurati
 ```json
 {
     "browser": "Chrome",
-    "master_password": null,
+    "master_password" : null,
     "confluence_info" : {
         "base_url": null,
         "login_url" : "/wiki/spaces",
@@ -67,6 +68,9 @@ The crawler can be configured using a JSON file. Below is an example configurati
     "timeout" : 3,
     "default_card_panel_name" : "Basic Info",
     "link_ignore_types" : ["mailto", "tel", "data", "file"],
+    "ignore_links" : [
+        "http://example.com"
+    ],
     "info_skip" : {
         "default_card_panel_name" : ["Operations", "Tiny Link: (useful for email)"],
         "Labels" : true,

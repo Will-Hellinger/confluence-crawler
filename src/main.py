@@ -130,7 +130,7 @@ def generate_log(thread_info: dict, logs_path: str, verbose: bool) -> None:
             file.write('\n')
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, logs_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
+def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, log: bool, logs_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
     """
     Main function to check the links in Confluence.
 
@@ -261,7 +261,8 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
     if verbose:
         info_thread_thread.join()
     
-    generate_log(thread_info, logs_path, verbose)
+    if log:
+        generate_log(thread_info, logs_path, verbose)
 
     for thread_number, info in thread_info.items():
         link_count += info['link_count']
@@ -293,6 +294,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--spaces', type=str, help='The spaces to check. (e.g., "space1,space2")')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose mode.')
     parser.add_argument('-e', '--export', action='store_true', help='Export the pages to word documents.')
+    parser.add_argument('-l', '--log', action='store_true', help='Generate a log of the failed links.')
     parser.add_argument('-op', '--out_path', type=str, help='The path to the out data (logs and exports). Defaults to directory program is run in.')
     parser.add_argument('-cache', '--cache', action='store_true', help='Use the cache.')
     parser.add_argument('-cache_path', '--cache_path', type=str, help='The path to the cache.')
@@ -444,4 +446,4 @@ if __name__ == '__main__':
 
     thread_info: dict = {} # Define here!
 
-    main(data, query, headers, args.count, args.threads, args.export, export_path, logs_path, cookie_cache, cookie_path, master_key, args.verbose)
+    main(data, query, headers, args.count, args.threads, args.export, export_path, args.log, logs_path, cookie_cache, cookie_path, master_key, args.verbose)

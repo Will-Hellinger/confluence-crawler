@@ -60,7 +60,7 @@ def get_pages(session: requests.Session, query_url: str, query: dict) -> list[di
     :return: The pages from Confluence.
     """
 
-    response = session.post(query_url, json=query, headers={'Content-Length': str(len(query)), 'Content-Type': 'application/json'})
+    response: requests.Response = session.post(query_url, json=query, headers={'Content-Length': str(len(query)), 'Content-Type': 'application/json'})
 
     pages: list[dict] | None = response.json().get('data', {}).get('confluenceContentSearch', {}).get('nodes', None)
 
@@ -81,7 +81,7 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     :return: The information for the page.
     """
 
-    response = session.get(f'{page_info_url}{page_id}')
+    response: requests.Response = session.get(f'{page_info_url}{page_id}')
 
     data: dict = {}
 
@@ -190,7 +190,7 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     return data
 
 
-def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], timeout: int) -> dict:
+def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], ignore_links: list[str], timeout: int) -> dict:
     """
     Test the links on a page.
 
@@ -199,6 +199,8 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
     :param page: The page to test.
     :param base_url: The base URL of the Confluence site.
     :param link_ignore_types: The types of links to ignore.
+    :param ignore_links: The links to ignore.
+    :param timeout: The timeout for the request.
     :return: The links on the page.
     """
 
@@ -219,6 +221,9 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
         #Assume it's referencing itself
         if value.startswith('/'):
             value = f'{base_url}{value}'
+        
+        if value in ignore_links:
+            continue
 
         try:
             response = session.get(value, timeout=timeout, headers=headers)
@@ -226,12 +231,12 @@ def test_page_links(session: requests.Session, headers: dict, page: dict, base_u
         except Exception as error:
             data[value] = error
 
+            # This assumes that Upgrade-Insecure-Requests is disabled in the headers.
             if value.startswith('http://') and not value.startswith('https://'):
                 try:
                     response = session.get(value.replace('http://', 'https://', 1), timeout=timeout, headers=headers)
                     data[value] = response.status_code
                 except requests.exceptions.RequestException:
                     data[value] = 'Error connecting'
-
     
     return data

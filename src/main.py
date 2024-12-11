@@ -303,8 +303,24 @@ if __name__ == '__main__':
 
     args: argparse.Namespace = parser.parse_args()
 
-    # One of the most import paths
-    data_path: str = f'.{os.sep}data{os.sep}'
+    # One of the most important paths
+    data_path: str = f'{data_manager.get_documents_folder()}{os.sep}confluence-crawler{os.sep}'
+    
+    first_launch: bool = False
+
+    if not os.path.exists(data_path):
+        first_launch = True
+        os.makedirs(data_path)
+
+    if first_launch and os.path.exists(f'.{os.sep}data{os.sep}'):
+        for filename in os.listdir(f'.{os.sep}data{os.sep}'):
+            if os.path.isfile(f'.{os.sep}data{os.sep}{filename}'):
+                shutil.copy(f'.{os.sep}data{os.sep}{filename}', f'{data_path}{filename}')
+    
+    if first_launch and not os.path.exists(f'.{os.sep}data{os.sep}'):
+        print('Failed to find the initial data directory. Please move the data directory to the correct location.')
+        exit(1)
+
 
     if args.data:
         data_path = args.data
@@ -312,7 +328,7 @@ if __name__ == '__main__':
     if not data_path.endswith(os.sep):
         data_path += os.sep
     
-    # One of the most import paths
+    # One of the most important paths
     out_path: str = f'.{os.sep}out{os.sep}'
 
     if args.out_path:
@@ -321,7 +337,7 @@ if __name__ == '__main__':
     if not out_path.endswith(os.sep):
         out_path += os.sep
 
-    # One of the most import paths
+    # One of the most important paths
     cache_path: str = f'{data_path}cache{os.sep}'
 
     if args.cache_path:
@@ -330,7 +346,7 @@ if __name__ == '__main__':
     if not cache_path.endswith(os.sep):
         cache_path += os.sep
 
-    # One of the most import paths
+    # One of the most important paths
     header_path: str = f'{data_path}headers.json'
 
     if args.headers:

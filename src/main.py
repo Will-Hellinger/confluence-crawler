@@ -303,7 +303,7 @@ if __name__ == '__main__':
 
     args: argparse.Namespace = parser.parse_args()
 
-    # One of the most import paths
+    # One of the most important paths
     data_path: str = f'.{os.sep}data{os.sep}'
 
     if args.data:
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     if not data_path.endswith(os.sep):
         data_path += os.sep
     
-    # One of the most import paths
+    # One of the most important paths
     out_path: str = f'.{os.sep}out{os.sep}'
 
     if args.out_path:
@@ -321,7 +321,7 @@ if __name__ == '__main__':
     if not out_path.endswith(os.sep):
         out_path += os.sep
 
-    # One of the most import paths
+    # One of the most important paths
     cache_path: str = f'{data_path}cache{os.sep}'
 
     if args.cache_path:
@@ -330,7 +330,7 @@ if __name__ == '__main__':
     if not cache_path.endswith(os.sep):
         cache_path += os.sep
 
-    # One of the most import paths
+    # One of the most important paths
     header_path: str = f'{data_path}headers.json'
 
     if args.headers:

@@ -304,7 +304,23 @@ if __name__ == '__main__':
     args: argparse.Namespace = parser.parse_args()
 
     # One of the most important paths
-    data_path: str = f'.{os.sep}data{os.sep}'
+    data_path: str = f'{data_manager.get_documents_folder()}{os.sep}confluence-crawler{os.sep}'
+    
+    first_launch: bool = False
+
+    if not os.path.exists(data_path):
+        first_launch = True
+        os.makedirs(data_path)
+
+    if first_launch and os.path.exists(f'.{os.sep}data{os.sep}'):
+        for filename in os.listdir(f'.{os.sep}data{os.sep}'):
+            if os.path.isfile(f'.{os.sep}data{os.sep}{filename}'):
+                shutil.copy(f'.{os.sep}data{os.sep}{filename}', f'{data_path}{filename}')
+    
+    if first_launch and not os.path.exists(f'.{os.sep}data{os.sep}'):
+        print('Failed to find the initial data directory. Please move the data directory to the correct location.')
+        exit(1)
+
 
     if args.data:
         data_path = args.data

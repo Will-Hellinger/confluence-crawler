@@ -1,6 +1,8 @@
 import os
 import json
 import base64
+import platform
+from pathlib import Path
 import cryptography.fernet
 
 
@@ -84,3 +86,32 @@ def check_exists(file_path: str):
         return True
     
     raise FileNotFoundError(f"The file {file_path} does not exist.")
+
+
+def get_documents_folder() -> Path:
+    """
+    Returns the path to the user's Documents folder.
+
+    :return: Path to the user's Documents folder.
+    """
+
+    system: str = platform.system()
+    documents_path: Path = Path()
+
+    match system:
+        case 'Windows':
+            # Windows: Use the 'USERPROFILE' environment variable
+            documents_path = Path(os.getenv('USERPROFILE', ''), 'Documents')
+        
+        case 'Darwin':  # macOS
+            # macOS: Use the 'HOME' environment variable
+            documents_path = Path(os.getenv('HOME', ''), 'Documents')
+        
+        case 'Linux':
+            # Linux: Use the 'HOME' environment variable
+            documents_path = Path(os.getenv('HOME', ''), 'Documents')
+        
+        case _:
+            raise NotImplementedError(f"Unsupported operating system: {system}")
+    
+    return documents_path

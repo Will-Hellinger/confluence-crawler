@@ -24,7 +24,7 @@ pip install -r requirements.txt
 To run the crawler, use the following command:
 
 ```
-python ./src/main.py -c [max page count to check for (default is 250)] -t [thread count] --cache [optional]
+python ./src/main.py --count [max page count to check for (default is 250)] --thread [thread count] --cache [optional] --log [optional]
 ```
 
 ## Arguments

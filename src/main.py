@@ -284,7 +284,7 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
             
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Confluence Dead Link Checker')
+    parser = argparse.ArgumentParser(description='Confluence Crawler')
 
     parser.add_argument('-d', '--data', type=str, help='The path to the data directory.')
     parser.add_argument('-q', '--query', type=str, help='The path to a queryJSON file.')
@@ -301,25 +301,54 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', type=str, help='The master password to encrypt and decrypt the cache.')
     parser.add_argument('-fp', '--forgot_password', action='store_true', help='Forgot the master password.')
 
+    parser.add_argument('-u', '--upgrade', action='store_true', help='Upgrade the data directory to the latest version.')
+
     args: argparse.Namespace = parser.parse_args()
 
     # One of the most important paths
     data_path: str = f'{data_manager.get_documents_folder()}{os.sep}confluence-crawler{os.sep}'
+
+    default_path: str = f'.{os.sep}data{os.sep}'
     
     first_launch: bool = False
+
+    info_path: str = f'{data_path}info.json'
+    default_info_path: str = f'.{data_path}default_info.json'
 
     if not os.path.exists(data_path):
         first_launch = True
         os.makedirs(data_path)
 
-    if first_launch and os.path.exists(f'.{os.sep}data{os.sep}'):
-        for filename in os.listdir(f'.{os.sep}data{os.sep}'):
-            if os.path.isfile(f'.{os.sep}data{os.sep}{filename}'):
-                shutil.copy(f'.{os.sep}data{os.sep}{filename}', f'{data_path}{filename}')
+    if first_launch and os.path.exists(default_path):
+        for filename in os.listdir(default_path):
+            if os.path.isfile(f'{default_path}{filename}'):
+                shutil.copy(f'{default_path}{filename}', f'{data_path}{filename}')
     
-    if first_launch and not os.path.exists(f'.{os.sep}data{os.sep}'):
+    if first_launch and not os.path.exists(f'{default_path}'):
         print('Failed to find the initial data directory. Please move the data directory to the correct location.')
         exit(1)
+
+    if args.upgrade and not first_launch:
+        print('Upgraded the data directory.')
+
+        if not os.path.exists(default_path):
+            print('Failed to find the default data directory.')
+            exit(1)
+
+        for filename in os.listdir(default_path):
+            if os.path.isfile(f'{default_path}{filename}'):
+                shutil.copy(f'{default_path}{filename}', f'{data_path}{filename}')
+
+        if not os.path.exists(default_info_path):
+            print('Failed to find the default info file.')
+            exit(1)
+
+        migrate_data: dict = data_manager.load_json(default_info_path)
+        original_data: dict = data_manager.load_json(info_path)
+
+        migrate_data.update(original_data)
+
+        data_manager.dump_json(info_path, migrate_data)
 
 
     if args.data:
@@ -356,9 +385,6 @@ if __name__ == '__main__':
     logs_path: str = f'{out_path}logs{os.sep}'
 
     cookie_cache: bool | dict = False
-
-    default_info_path: str = f'.{data_path}default_info.json'
-    info_path: str = f'{data_path}info.json'
 
     query_path: str = f'{data_path}pages_query.json'
 

@@ -319,6 +319,8 @@ if __name__ == '__main__':
     if not os.path.exists(data_path):
         first_launch = True
         os.makedirs(data_path)
+    elif not os.listdir(data_path): # Check if the directory is empty
+        first_launch = True
 
     if first_launch and os.path.exists(default_path):
         #Retain more in depth structures.

@@ -321,9 +321,8 @@ if __name__ == '__main__':
         os.makedirs(data_path)
 
     if first_launch and os.path.exists(default_path):
-        for filename in os.listdir(default_path):
-            if os.path.isfile(f'{default_path}{filename}'):
-                shutil.copy(f'{default_path}{filename}', f'{data_path}{filename}')
+        #Retain more in depth structures.
+        shutil.copytree(default_path, data_path, dirs_exist_ok=True)
     
     if first_launch and not os.path.exists(f'{default_path}'):
         print('Failed to find the initial data directory. Please move the data directory to the correct location.')

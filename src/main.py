@@ -251,14 +251,15 @@ def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_cou
         threads.append(thread)
         thread.start()
     
-    if verbose:
+    # verify that the thread count cant excede what was specified
+    if verbose and thread_count > 1:
         info_thread_thread: threading.Thread = threading.Thread(target=info_thread)
         info_thread_thread.start()
     
     for thread in threads:
         thread.join()
     
-    if verbose:
+    if verbose and thread_count > 1:
         info_thread_thread.join()
     
     if log:

@@ -54,6 +54,8 @@ The crawler can be configured using a JSON file. Below is an example configurati
 - If you have specifical types of links to ignore, the link_ignore_types checks the start of each link for the starting ignore type.
 - Change info skip to keep track of specific info as you please.
 
+Configuration files can be found in the `confluence-crawler` directory within your documents folder. For detailed setup instructions, please refer to the [setup guide](/docs/setup.md).
+
 ```json
 {
     "browser": "Chrome",

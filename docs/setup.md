@@ -4,6 +4,17 @@ Please refer to the [readme.md](/readme.md) for the basics of running the projec
 - Optional launch arguments and their functions
 - How to pull the project
 
+## Where does this project store its data?
+
+Upon the first launch, the project will create a new folder named `confluence-crawler` within your documents directory and copy the entire data directory into it. This is to ensure that data will be retained for future versions of the software.
+
+## Logs and Exports
+
+The program generates logs to help you track its activities and diagnose any issues. These logs are stored in the `out` directory within the `logs` folder. The `out` directory can be located inside the `confluence-crawler` folder. Each log file is timestamped for easy identification.
+
+Additionally, you can export the data collected by the program. The exports are saved in the `exports` directory, also within the `out` directory. You'll find them inside the `confluence-crawler` folder as well. The exported files are direct .doc downloads of each page.
+
+
 ## I don't have an info.json!
 
 If the project hasn't run before, you won't have an info.json file. You can either copy the default_info.json file and rename it to info.json, or launch the project once to generate the file automatically.

@@ -360,7 +360,7 @@ if __name__ == '__main__':
         data_path += os.sep
     
     # One of the most important paths
-    out_path: str = f'.{os.sep}out{os.sep}'
+    out_path: str = f'{data_path}out{os.sep}'
 
     if args.out_path:
         out_path = args.out_path
@@ -396,10 +396,6 @@ if __name__ == '__main__':
 
     if args.query:
         query_path = args.query
-    
-    if not os.path.exists(data_path):
-        os.makedirs(out_path)
-        print('Failed to find the data directory. Created the directory.')
     
     if not os.path.exists(info_path):
         print(f'Failed to find the info file at {info_path}.')
@@ -453,20 +449,22 @@ if __name__ == '__main__':
         data['confluence_info']['spaces'] = spaces
 
     if args.cache:
+        master_password: str | None = None
+
         if data.get('master_password', None) is not None:
-            master_password: str | None = data.get('master_password', None)
+            master_password = data.get('master_password', None)
         elif args.password is not None:
-            master_password: str | None = args.password
+            master_password = args.password
         else:
-            master_password: str | None = getpass.getpass('Please enter the master password: ') #Hide the password while typing
-        
+            master_password = getpass.getpass('Please enter the master password: ') #Hide the password while typing
+
         if master_password is None:
             print('Caching requires a master password.')
             exit(1)
         
         master_key: bytes | None = data_manager.generate_key(master_password)
 
-        master_password: str | None = None # Clear the master password
+        master_password = None # Clear the master password
 
         if args.forgot_password and os.path.exists(cookie_path):
             os.remove(cookie_path)

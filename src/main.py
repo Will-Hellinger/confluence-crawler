@@ -13,7 +13,21 @@ import data_manager
 import confluence_manager
 
 
-def scrape_thread(thread_number: int, session: requests.Session, headers: dict, pages: dict, confluence_info: dict, default_card_panel_name: str, card_info_skip: dict, link_ignore_types: list[str], ignore_links: list[str], timeout: int, export: bool, export_path: str, verbose: bool) -> None:
+def scrape_thread(
+        thread_number: int, 
+        session: requests.Session, 
+        headers: dict, 
+        pages: dict, 
+        confluence_info: dict, 
+        default_card_panel_name: str, 
+        card_info_skip: dict, 
+        link_ignore_types: list[str], 
+        ignore_links: list[str], 
+        timeout: int, 
+        export: bool, 
+        export_path: str, 
+        verbose: bool
+    ) -> None:
     """
     Thread function to scrape the pages.
 
@@ -130,7 +144,21 @@ def generate_log(thread_info: dict, logs_path: str, verbose: bool) -> None:
             file.write('\n')
 
 
-def main(data: dict, query_data: dict, headers:dict, page_count: int, thread_count: int, export: bool, export_path: str, log: bool, logs_path: str, cookie_cache: bool | dict, cookie_path: str, master_key: bytes | None, verbose: bool) -> None:
+def main(
+        data: dict, 
+        query_data: dict, 
+        headers:dict, 
+        page_count: int, 
+        thread_count: int, 
+        export: bool, 
+        export_path: str, 
+        log: bool, 
+        logs_path: str, 
+        cookie_cache: bool | dict, 
+        cookie_path: str, 
+        master_key: bytes | None, 
+        verbose: bool
+    ) -> None:
     """
     Main function to check the links in Confluence.
 

@@ -67,7 +67,15 @@ def get_pages(session: requests.Session, query_url: str, query: dict) -> list[di
     return pages
 
 
-def get_page_info(session: requests.Session, page_id: str, page_info_url: str, confluence_base_url: str, default_card_panel_name: str, card_info_skip: dict, verbose: bool) -> dict:
+def get_page_info(
+        session: requests.Session, 
+        page_id: str, 
+        page_info_url: str, 
+        confluence_base_url: str, 
+        default_card_panel_name: str, 
+        card_info_skip: dict, 
+        verbose: bool
+    ) -> dict:
     """
     Get the information for a page.
 
@@ -190,7 +198,15 @@ def get_page_info(session: requests.Session, page_id: str, page_info_url: str, c
     return data
 
 
-def test_page_links(session: requests.Session, headers: dict, page: dict, base_url: str, link_ignore_types: list[str], ignore_links: list[str], timeout: int) -> dict:
+def test_page_links(
+        session: requests.Session, 
+        headers: dict, 
+        page: dict, 
+        base_url: str, 
+        link_ignore_types: list[str], 
+        ignore_links: list[str], 
+        timeout: int
+    ) -> dict:
     """
     Test the links on a page.
 
